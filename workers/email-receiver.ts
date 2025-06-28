@@ -16,7 +16,6 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
   const attachments = [];
   for (const attachment of parsedMessage.attachments) {
     const objKey = `${parsedMessage.from}-${Date.now()}-${attachment.filename}`;
-    console.log(objKey);
 
     await env.ATTACHMENTS_BUCKET.put(objKey, attachment.content, {
       httpMetadata: {
