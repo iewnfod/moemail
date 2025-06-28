@@ -13,23 +13,6 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
 
   console.log("parsedMessage:", parsedMessage)
 
-  const attachments = [];
-  for (const attachment of parsedMessage.attachments) {
-    const objKey = `${parsedMessage.from}-${Date.now()}-${attachment.filename}`;
-
-    await env.ATTACHMENTS_BUCKET.put(objKey, attachment.content, {
-      httpMetadata: {
-        contentType: attachment.mimeType
-      }
-    });
-
-    attachments.push({
-      name: attachment.filename,
-      size: attachment.content.byteLength,
-      r2Key: objKey
-    });
-  }
-
   try {
     const targetEmail = await db.query.emails.findFirst({
       where: eq(sql`LOWER(${emails.address})`, message.to.toLowerCase())
@@ -47,7 +30,6 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
       content: parsedMessage.text || '',
       html: parsedMessage.html || '',
       type: 'received',
-      attachments: JSON.stringify(attachments)
     }).returning().get()
 
     const webhook = await db.query.webhooks.findFirst({
@@ -70,8 +52,7 @@ const handleEmail = async (message: ForwardableEmailMessage, env: Env) => {
             content: savedMessage.content,
             html: savedMessage.html,
             receivedAt: savedMessage.receivedAt.toISOString(),
-            toAddress: targetEmail.address,
-            attachments: JSON.stringify(attachments)
+            toAddress: targetEmail.address
           } as EmailMessage)
         })
       } catch (error) {

@@ -61,7 +61,6 @@ export const messages = sqliteTable("message", {
   content: text("content").notNull(),
   html: text("html"),
   type: text("type"),
-  attachments: text("attachments"),
   receivedAt: integer("received_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
